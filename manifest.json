@@ -1,0 +1,26 @@
+{
+  "name": "Aplikasi Petugas Air Bersih RW 15",
+  "short_name": "Petugas Air RW15",
+  "description": "Aplikasi Khusus Petugas Lapangan Air Bersih RW 15 Kp. Randukurung (Scan QR Meter Air, Foto Bukti Meteran, OCR, Offline-First & Struk Bluetooth).",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b3b60",
+  "theme_color": "#0284c7",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%230284c7'/%3E%3Cpath d='M96 30C96 30 50 86 50 122C50 147.4 70.6 168 96 168C121.4 168 142 147.4 142 122C142 86 96 30 96 30ZM96 150C80.5 150 68 137.5 68 122C68 117 70 110 74 103C72 115 80 128 96 130C112 132 120 120 120 112C123 116 124 119 124 122C124 137.5 111.5 150 96 150Z' fill='%23ffffff'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230284c7'/%3E%3Cpath d='M256 76C256 76 132 226 132 322C132 390.5 187.5 446 256 446C324.5 446 380 390.5 380 322C380 226 256 76 256 76ZM256 398C214 398 180 364 180 322C180 308 186 290 196 272C191 304 213 338 256 344C298 350 320 318 320 296C328 306 332 314 332 322C332 364 298 398 256 398Z' fill='%23ffffff'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
