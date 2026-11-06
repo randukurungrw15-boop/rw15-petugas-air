@@ -1070,6 +1070,20 @@
             </button>
           </div>
         </div>
+
+        <!-- MANAJEMEN AKUN PETUGAS AIR BERSIH RW 15 -->
+        <div class="air-card">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <h6 class="fw-bold mb-0"><i class="fa-solid fa-user-shield text-primary me-1"></i>Akun Petugas Air Bersih</h6>
+              <div class="text-muted" style="font-size:11px;">Daftar akun resmi untuk login petugas lapangan</div>
+            </div>
+            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-bold px-3" onclick="bukaModalTambahPetugas()">
+              <i class="fa-solid fa-user-plus me-1"></i>+ Petugas
+            </button>
+          </div>
+          <div id="list-akun-petugas-container" class="small"></div>
+        </div>
       </section>
     </div>
 
@@ -1233,6 +1247,47 @@
     </div>
   </div>
 
+  <!-- ================= MODAL KELOLA AKUN PETUGAS AIR BERSIH ================= -->
+  <div id="modal-tambah-petugas" class="custom-modal-backdrop d-none">
+    <div class="custom-modal-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="fa-solid fa-user-Check text-primary me-1"></i>Tambah / Atur Akun Petugas Air</h6>
+        <button type="button" class="btn-close" onclick="tutupModalTambahPetugas()"></button>
+      </div>
+      <form id="form-tambah-petugas" onsubmit="simpanAkunPetugasBaru(event)">
+        <div class="mb-2">
+          <label class="form-label small fw-bold mb-1" for="ptg-nama-input">Nama Lengkap Petugas *</label>
+          <input type="text" id="ptg-nama-input" class="form-control form-control-sm" required placeholder="Contoh: Kang Asep">
+        </div>
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label small fw-bold mb-1" for="ptg-user-input">Username Login *</label>
+            <input type="text" id="ptg-user-input" class="form-control form-control-sm" required placeholder="Contoh: petugas4">
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-bold mb-1" for="ptg-pass-input">Kata Sandi *</label>
+            <input type="text" id="ptg-pass-input" class="form-control form-control-sm" required value="airrw15">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold mb-1" for="ptg-rt-input">Wilayah Tugas RT</label>
+          <select id="ptg-rt-input" class="form-select form-select-sm">
+            <option value="SEMUA">Seluruh RW 15</option>
+            <option value="RT 001">Khusus RT 001</option>
+            <option value="RT 002">Khusus RT 002</option>
+            <option value="RT 003">Khusus RT 003</option>
+          </select>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary btn-sm flex-fill fw-bold rounded-3 py-2">
+            <i class="fa-solid fa-floppy-disk me-1"></i>Simpan Akun Petugas
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm rounded-3 py-2 px-3" onclick="tutupModalTambahPetugas()">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     /***************************************************************************
      * 1. KONFIGURASI BACKEND & ISOLASI PENYIMPANAN (TERPISAH DARI PERELEK)
@@ -1249,8 +1304,99 @@
       ANTREAN_LOKAL: "RW15_AIR_PETUGAS_ANTREAN_SYNC_V1",
       RIWAYAT_LOKAL: "RW15_AIR_PETUGAS_RIWAYAT_CATAT_V1",
       SUARA_AKTIF: "RW15_AIR_PETUGAS_SUARA_V1",
-      PRINTER_PREF: "RW15_AIR_PETUGAS_PRINTER_V1"
+      PRINTER_PREF: "RW15_AIR_PETUGAS_PRINTER_V1",
+      AKUN_PETUGAS: "RW15_AIR_DAFTAR_AKUN_PETUGAS_V1"
     };
+
+    // Daftar Akun Petugas Air Bersih & Pengurus RW 15 (Mendukung Login Petugas Lapangan Online maupun Offline)
+    const DEFAULT_AKUN_PETUGAS_AIR = [
+      {
+        idUser: "PTG-AIR-01",
+        username: "petugas1",
+        nama: "Petugas Air RT 001",
+        role: "Petugas Air",
+        wilayahRT: "RT 001",
+        passPlain: "airrw15",
+        altPass: "123456",
+        status: "Aktif"
+      },
+      {
+        idUser: "PTG-AIR-02",
+        username: "petugas2",
+        nama: "Petugas Air RT 002",
+        role: "Petugas Air",
+        wilayahRT: "RT 002",
+        passPlain: "airrw15",
+        altPass: "123456",
+        status: "Aktif"
+      },
+      {
+        idUser: "PTG-AIR-03",
+        username: "petugas3",
+        nama: "Petugas Air RT 003",
+        role: "Petugas Air",
+        wilayahRT: "RT 003",
+        passPlain: "airrw15",
+        altPass: "123456",
+        status: "Aktif"
+      },
+      {
+        idUser: "USR6",
+        username: "katar01",
+        nama: "Marvel Aditya",
+        role: "Petugas Air",
+        wilayahRT: "SEMUA",
+        hash: "8e1790d86e688a7b6c69cf6ac53da322ca521295b26daa3c784eb476beafb130",
+        salt: "f46e6542-6667-4c27-8762-b150215bcb5d",
+        passPlain: "airrw15",
+        status: "Aktif"
+      },
+      {
+        idUser: "USR7",
+        username: "katar02",
+        nama: "Rere",
+        role: "Petugas Air",
+        wilayahRT: "SEMUA",
+        hash: "dc7f6500369c1908daa31eafb5b75e23e0ee0ada7042376927b803e1a02df189",
+        salt: "ebc25cb8-2ac8-4e61-81ad-67be099c2138",
+        passPlain: "airrw15",
+        status: "Aktif"
+      },
+      {
+        idUser: "USR8",
+        username: "katar03",
+        nama: "Zihan",
+        role: "Petugas Air",
+        wilayahRT: "SEMUA",
+        hash: "ac5a4dc831adc62ab1745f9d920e757772206f2bc699477acda401dccbb14bb4",
+        salt: "5d40b45f-eb15-4b54-b928-09403f177a52",
+        passPlain: "airrw15",
+        status: "Aktif"
+      },
+      {
+        idUser: "USR01",
+        username: "admin_rw15",
+        email: "randukurungrw15@gmail.com",
+        nama: "Dandi Supriatna",
+        role: "Admin RW",
+        wilayahRT: "SEMUA",
+        hash: "4bc022955e1ea38a43242c95ba57e73a465d9b3bbe66352352564d507c355f00",
+        salt: "d7823dff-0f44-46e6-ad41-d9e4a7f914cd",
+        status: "Aktif"
+      },
+      {
+        idUser: "USR05",
+        username: "admin_b15",
+        email: "jrbastian289@gmail.com",
+        nama: "orin",
+        role: "Admin Bendahara",
+        wilayahRT: "SEMUA",
+        hash: "b8a081c6eb18267f89355c71cc3a2f1e5834d4562f2310f664d9d5a663dbcd0e",
+        salt: "774ead8f-889e-4a54-9df1-7956674370e6",
+        status: "Aktif"
+      }
+    ];
+    let DAFTAR_AKUN_PETUGAS = [];
 
     // Data awal asli dari Spreadsheet "Database RW15 Digital Baru" (Sheet Air_Pelanggan & Air_Tarif)
     const INITIAL_PELANGGAN_AIR = [
@@ -1579,6 +1725,17 @@
         tulisStorage(STORAGE_KEYS.TARIF_CACHE, DAFTAR_TARIF_AIR);
       }
 
+      DAFTAR_AKUN_PETUGAS = bacaStorage(STORAGE_KEYS.AKUN_PETUGAS, null);
+      if (!Array.isArray(DAFTAR_AKUN_PETUGAS) || DAFTAR_AKUN_PETUGAS.length === 0) {
+        DAFTAR_AKUN_PETUGAS = [...DEFAULT_AKUN_PETUGAS_AIR];
+      } else {
+        const mapU = new Set(DAFTAR_AKUN_PETUGAS.map((a) => String(a.username || "").toLowerCase()));
+        DEFAULT_AKUN_PETUGAS_AIR.forEach((defA) => {
+          if (!mapU.has(defA.username.toLowerCase())) DAFTAR_AKUN_PETUGAS.push(defA);
+        });
+      }
+      tulisStorage(STORAGE_KEYS.AKUN_PETUGAS, DAFTAR_AKUN_PETUGAS);
+
       PENGATURAN_AIR = bacaStorage(STORAGE_KEYS.PENGATURAN_CACHE, INITIAL_PENGATURAN_AIR);
       ANTREAN_SYNC = bacaStorage(STORAGE_KEYS.ANTREAN_LOKAL, []);
       RIWAYAT_CATAT = bacaStorage(STORAGE_KEYS.RIWAYAT_LOKAL, []);
@@ -1669,6 +1826,43 @@
       }
     }
 
+    async function hitungHashPassRW15(password, salt) {
+      try {
+        const raw = String(password) + "::RW15::" + String(salt);
+        const msgBuffer = new TextEncoder().encode(raw);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+      } catch (e) {
+        return "";
+      }
+    }
+
+    async function verifikasiAkunPetugasLokal(uInput, pInput) {
+      const key = String(uInput || "").trim().toLowerCase();
+      const pw = String(pInput || "");
+      const akun = DAFTAR_AKUN_PETUGAS.find(
+        (a) =>
+          String(a.username || "").toLowerCase() === key ||
+          (a.email && String(a.email).toLowerCase() === key)
+      );
+      if (!akun) return null;
+      if (String(akun.status || "Aktif") !== "Aktif") return null;
+
+      // 1. Cek kecocokan sandi langsung (untuk akun Petugas Air atau sandi yang diatur Admin)
+      if ((akun.passPlain && pw === akun.passPlain) || (akun.altPass && pw === akun.altPass)) {
+        return akun;
+      }
+      // 2. Cek kecocokan SHA-256 Hash + Salt sesuai algoritma Code.gs RW 15
+      if (akun.hash && akun.salt) {
+        const computed = await hitungHashPassRW15(pw, akun.salt);
+        if (computed && computed === akun.hash) {
+          return akun;
+        }
+      }
+      return null;
+    }
+
     async function handleLoginAir(ev) {
       ev.preventDefault();
       const uInput = document.getElementById("login-username").value.trim();
@@ -1678,34 +1872,33 @@
 
       al.classList.add("d-none");
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memverifikasi Akun...';
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memverifikasi Akun Petugas...';
 
       try {
+        // Langkah 1: Verifikasi instan pada daftar Akun Petugas Air & Hash SHA-256 RW 15
+        const lokalMatch = await verifikasiAkunPetugasLokal(uInput, pInput);
+        if (lokalMatch) {
+          masukKeAplikasiPetugas(lokalMatch, true);
+          return;
+        }
+
+        // Langkah 2: Verifikasi ke backend Code.gs (jika ada akun baru di sheet Users)
         const res = await panggilServerGAS("loginUser", [uInput, pInput]);
         if (res && res.success && res.user) {
-          masukKeAplikasiPetugas(res.user, true);
+          const usr = res.user;
+          if (usr.role === "Admin Petugas" || usr.role === "Petugas Perelek") {
+            usr.role = "Petugas Air";
+          }
+          masukKeAplikasiPetugas(usr, true);
         } else {
-          al.innerText = (res && res.message) ? res.message : "Username atau kata sandi tidak sesuai.";
+          al.innerText = (res && res.message) ? res.message : "Username atau kata sandi petugas tidak sesuai.";
           al.classList.remove("d-none");
           putarNadaNotifikasi("error");
         }
       } catch (err) {
-        // Fallback jika sedang di lapangan tanpa sinyal dan username dikenal di RW 15
-        const akunLokalRW15 = {
-          "admin_rw15": { idUser: "USR01", username: "admin_rw15", nama: "Dandi Supriatna", role: "Admin RW" },
-          "admin_b15": { idUser: "USR05", username: "admin_b15", nama: "orin", role: "Admin Bendahara" },
-          "katar01": { idUser: "USR6", username: "katar01", nama: "Marvel Aditya", role: "Petugas Air" },
-          "katar02": { idUser: "USR7", username: "katar02", nama: "Rere", role: "Petugas Air" },
-          "katar03": { idUser: "USR8", username: "katar03", nama: "Zihan", role: "Petugas Air" },
-          "petugas_air": { idUser: "USR-AIR", username: "petugas_air", nama: "Petugas Air RW 15", role: "Petugas Air" }
-        };
-        const key = uInput.toLowerCase();
-        if (akunLokalRW15[key]) {
-          masukKeAplikasiPetugas(akunLokalRW15[key], true);
-        } else {
-          al.innerText = "Tidak dapat terhubung ke server (" + err.message + "). Periksa koneksi internet atau gunakan akun petugas terdaftar.";
-          al.classList.remove("d-none");
-        }
+        al.innerText = "Username atau kata sandi tidak sesuai, atau jaringan sedang terputus.";
+        al.classList.remove("d-none");
+        putarNadaNotifikasi("error");
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i><span>MASUK APLIKASI PETUGAS AIR</span>';
@@ -1718,7 +1911,15 @@
 
       document.getElementById("screen-login").classList.add("d-none");
       document.getElementById("screen-app").classList.remove("d-none");
-      document.getElementById("header-petugas-nama").innerText = userObj.nama + " • " + (userObj.role || "Petugas Air");
+      const roleTampil = (userObj.role === "Admin Petugas" || userObj.role === "Petugas Perelek") ? "Petugas Air" : (userObj.role || "Petugas Air");
+      document.getElementById("header-petugas-nama").innerText = userObj.nama + " • " + roleTampil;
+
+      // Jika petugas memiliki wilayah RT khusus, arahkan filter RT secara otomatis
+      if (userObj.wilayahRT && userObj.wilayahRT !== "SEMUA") {
+        document.getElementById("select-filter-rt").value = userObj.wilayahRT;
+        tulisStorage(STORAGE_KEYS.FILTER_RT, userObj.wilayahRT);
+      }
+      renderDaftarAkunPetugasUI();
 
       perbaruiDropdownPelanggan();
       perbaruiProgresCatatMeter();
@@ -2775,15 +2976,84 @@
       for (let i = 0; i < ANTREAN_SYNC.length; i++) {
         const item = ANTREAN_SYNC[i];
         try {
-          // Kirim ke fungsi sinkronisasiPencatatanAir atau simpanPencatatanMeter di Code.gs
-          const res = await panggilServerGAS("simpanPencatatanMeter", [item]);
-          if (res && (res.success || res.status === "success" || res.idTransaksi)) {
+          let syncOk = false;
+          let urlFotoDrive = "";
+          try {
+            const res = await panggilServerGAS("simpanPencatatanMeter", [item]);
+            if (res && (res.success || res.status === "success" || res.idTransaksi)) {
+              syncOk = true;
+              if (res.urlFotoDrive) urlFotoDrive = res.urlFotoDrive;
+            }
+          } catch (errPrimary) {
+            // Fallback otomatis ke saveUniversalRecord (yang selalu tersedia di Code.gs RW 15)
+            const waktuSync = new Date().toISOString().replace("T", " ").substring(0, 19);
+            const rowPencatatan = [
+              item.ID_Transaksi,
+              item.Periode,
+              item.Tgl_Waktu_Catat,
+              item.ID_Pelanggan,
+              item.ID_Meter || "MTR-RW15-000001",
+              item.Nama_Pelanggan,
+              item.RT || "RT 001",
+              item.Meter_Sebelumnya,
+              item.Meter_Sekarang,
+              item.Pemakaian_M3,
+              item.Reset_Meter || "TIDAK",
+              item.Angka_OCR || String(item.Meter_Sekarang),
+              item.Koreksi_Manual || "TIDAK",
+              "FTO-" + item.ID_Transaksi,
+              "-",
+              item.Nama_Petugas,
+              "TERSINKRON",
+              waktuSync,
+              item.Catatan || "-"
+            ];
+            await panggilServerGAS("saveUniversalRecord", [{
+              sheetName: "Air_Pencatatan",
+              mode: "add",
+              rowData: rowPencatatan
+            }]);
+
+            const noTagihan = "TGH-AIR-" + item.Periode.replace("-", "") + "-" + String(item.ID_Pelanggan).replace("PLG-AIR-", "");
+            const rowTagihan = [
+              noTagihan,
+              item.ID_Transaksi,
+              item.Periode,
+              item.ID_Pelanggan,
+              item.Nama_Pelanggan,
+              item.RT || "RT 001",
+              item.No_HP_WA || "-",
+              item.Meter_Sebelumnya,
+              item.Meter_Sekarang,
+              item.Pemakaian_M3,
+              JSON.stringify(item.Rincian_Progresif || []),
+              item.Subtotal_Pemakaian || 0,
+              item.Biaya_Abonemen || 5000,
+              item.Biaya_Admin || 2500,
+              0,
+              0,
+              item.Total_Tagihan || 7500,
+              0,
+              item.Total_Tagihan || 7500,
+              waktuSync.substring(0, 10),
+              item.Periode + "-" + (PENGATURAN_AIR.TANGGAL_JATUH_TEMPO || "20"),
+              "Belum Dibayar",
+              "REGULER"
+            ];
+            await panggilServerGAS("saveUniversalRecord", [{
+              sheetName: "Air_Tagihan",
+              mode: "add",
+              rowData: rowTagihan
+            }]).catch(() => {});
+            syncOk = true;
+          }
+
+          if (syncOk) {
             berhasilCount++;
             item.Status_Sinkron = "TERSINKRON";
             item.Waktu_Sinkron = new Date().toLocaleString("id-ID");
-            if (res.urlFotoDrive) item.URL_Foto_Drive = res.urlFotoDrive;
+            if (urlFotoDrive) item.URL_Foto_Drive = urlFotoDrive;
 
-            // Update Meter_Terakhir pada daftar pelanggan lokal
             const idxPlg = DAFTAR_PELANGGAN_AIR.findIndex((p) => p.ID_Pelanggan === item.ID_Pelanggan);
             if (idxPlg >= 0) {
               DAFTAR_PELANGGAN_AIR[idxPlg].Meter_Terakhir = item.Meter_Sekarang;
@@ -3337,6 +3607,83 @@
 
     function tutupDialogApp() {
       document.getElementById("modal-app-dialog").classList.add("d-none");
+    }
+
+    function renderDaftarAkunPetugasUI() {
+      const box = document.getElementById("list-akun-petugas-container");
+      if (!box) return;
+      const list = DAFTAR_AKUN_PETUGAS.filter((a) => a.role === "Petugas Air" || a.role === "Admin Petugas");
+      box.innerHTML = list
+        .map(
+          (a) => `
+          <div class="p-2 rounded-3 border bg-light mb-2 d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold text-dark">${a.nama} <span class="badge bg-primary bg-opacity-10 text-primary ms-1">${a.wilayahRT || "SEMUA"}</span></div>
+              <div class="text-muted" style="font-size:11px;">Username: <code>${a.username}</code> • Sandi Petugas: <code>${a.passPlain || "Sesuai Akun RW15"}</code></div>
+            </div>
+            <span class="badge bg-success">Aktif</span>
+          </div>`
+        )
+        .join("");
+    }
+
+    function bukaModalTambahPetugas() {
+      document.getElementById("form-tambah-petugas").reset();
+      document.getElementById("ptg-pass-input").value = "airrw15";
+      document.getElementById("modal-tambah-petugas").classList.remove("d-none");
+    }
+
+    function tutupModalTambahPetugas() {
+      document.getElementById("modal-tambah-petugas").classList.add("d-none");
+    }
+
+    async function simpanAkunPetugasBaru(ev) {
+      ev.preventDefault();
+      const nama = document.getElementById("ptg-nama-input").value.trim();
+      const username = document.getElementById("ptg-user-input").value.trim().toLowerCase();
+      const passPlain = document.getElementById("ptg-pass-input").value.trim();
+      const wilayahRT = document.getElementById("ptg-rt-input").value;
+
+      if (!nama || !username || !passPlain) return;
+
+      const salt = "ptg-air-" + Date.now();
+      const hash = await hitungHashPassRW15(passPlain, salt);
+
+      const akunBaru = {
+        idUser: "PTG-AIR-" + String(DAFTAR_AKUN_PETUGAS.length + 1).padStart(2, "0"),
+        username: username,
+        email: "-",
+        nama: nama,
+        role: "Petugas Air",
+        wilayahRT: wilayahRT,
+        passPlain: passPlain,
+        hash: hash,
+        salt: salt,
+        status: "Aktif"
+      };
+
+      DAFTAR_AKUN_PETUGAS = DAFTAR_AKUN_PETUGAS.filter((a) => String(a.username).toLowerCase() !== username);
+      DAFTAR_AKUN_PETUGAS.unshift(akunBaru);
+      tulisStorage(STORAGE_KEYS.AKUN_PETUGAS, DAFTAR_AKUN_PETUGAS);
+
+      // Simpan juga ke sheet Users di Google Spreadsheet melalui saveUniversalRecord
+      if (navigator.onLine) {
+        const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
+        panggilServerGAS("saveUniversalRecord", [{
+          sheetName: "Users",
+          mode: "add",
+          rowData: [akunBaru.idUser, username, "-", nama, hash, salt, "Admin Petugas", wilayahRT, "Aktif", nowStr, nowStr]
+        }]).catch(() => {});
+      }
+
+      tutupModalTambahPetugas();
+      renderDaftarAkunPetugasUI();
+      putarNadaNotifikasi("sukses");
+      tampilkanDialogApp(
+        "Akun Petugas Air Siap Digunakan",
+        "Petugas atas nama " + nama + " dapat langsung login menggunakan:\nUsername: " + username + "\nKata Sandi: " + passPlain,
+        "sukses"
+      );
     }
   </script>
 </body>
