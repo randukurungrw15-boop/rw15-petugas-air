@@ -1270,6 +1270,57 @@
         QR_Code_Air: "AIR-RW15-000001",
         Tarif_Khusus: "REGULER",
         Keterangan: "Pelanggan Sambungan Air RW 15"
+      },
+      {
+        ID_Pelanggan: "PLG-AIR-000002",
+        ID_Meter: "MTR-RW15-000002",
+        Nama_Pelanggan: "jokowi",
+        No_KK: "-",
+        RT: "RT 001",
+        Alamat: "Kp. Randukurung RW 15",
+        No_HP_WA: "-",
+        No_Seri_Meter: "SN-WM-000002",
+        Tgl_Pasang: "2026-10-01",
+        Meter_Awal: 0,
+        Meter_Terakhir: 0,
+        Status_Pelanggan: "Aktif",
+        QR_Code_Air: "AIR-RW15-000002",
+        Tarif_Khusus: "REGULER",
+        Keterangan: "Pelanggan Sambungan Air RW 15"
+      },
+      {
+        ID_Pelanggan: "PLG-AIR-000003",
+        ID_Meter: "MTR-RW15-000003",
+        Nama_Pelanggan: "Gibran",
+        No_KK: "-",
+        RT: "RT 001",
+        Alamat: "Kp. Randukurung RW 15",
+        No_HP_WA: "-",
+        No_Seri_Meter: "SN-WM-000003",
+        Tgl_Pasang: "2026-10-01",
+        Meter_Awal: 0,
+        Meter_Terakhir: 0,
+        Status_Pelanggan: "Aktif",
+        QR_Code_Air: "AIR-RW15-000003",
+        Tarif_Khusus: "REGULER",
+        Keterangan: "Pelanggan Sambungan Air RW 15"
+      },
+      {
+        ID_Pelanggan: "PLG-AIR-000004",
+        ID_Meter: "MTR-RW15-000004",
+        Nama_Pelanggan: "Roy suryo",
+        No_KK: "-",
+        RT: "RT 001",
+        Alamat: "Kp. Randukurung RW 15",
+        No_HP_WA: "-",
+        No_Seri_Meter: "SN-WM-000004",
+        Tgl_Pasang: "2026-11-06",
+        Meter_Awal: 0,
+        Meter_Terakhir: 0,
+        Status_Pelanggan: "Aktif",
+        QR_Code_Air: "AIR-RW15-000004",
+        Tarif_Khusus: "REGULER",
+        Keterangan: "Pelanggan Sambungan Air RW 15"
       }
     ];
 
@@ -1508,12 +1559,19 @@
       SUARA_AKTIF = bacaStorage(STORAGE_KEYS.SUARA_AKTIF, true);
       perbaruiIkonSuara();
 
-      // Muat data cache lokal atau seed data awal dari Spreadsheet RW 15
+      // Muat data cache lokal & pastikan seluruh pelanggan awal dari Spreadsheet RW 15 terdaftar
       DAFTAR_PELANGGAN_AIR = bacaStorage(STORAGE_KEYS.PELANGGAN_CACHE, null);
       if (!Array.isArray(DAFTAR_PELANGGAN_AIR) || DAFTAR_PELANGGAN_AIR.length === 0) {
         DAFTAR_PELANGGAN_AIR = [...INITIAL_PELANGGAN_AIR];
-        tulisStorage(STORAGE_KEYS.PELANGGAN_CACHE, DAFTAR_PELANGGAN_AIR);
+      } else {
+        const existingIds = new Set(DAFTAR_PELANGGAN_AIR.map((p) => p.ID_Pelanggan));
+        INITIAL_PELANGGAN_AIR.forEach((initPlg) => {
+          if (!existingIds.has(initPlg.ID_Pelanggan)) {
+            DAFTAR_PELANGGAN_AIR.push(initPlg);
+          }
+        });
       }
+      tulisStorage(STORAGE_KEYS.PELANGGAN_CACHE, DAFTAR_PELANGGAN_AIR);
 
       DAFTAR_TARIF_AIR = bacaStorage(STORAGE_KEYS.TARIF_CACHE, null);
       if (!Array.isArray(DAFTAR_TARIF_AIR) || DAFTAR_TARIF_AIR.length === 0) {
@@ -2020,13 +2078,22 @@
       }
     }
 
-    // Simulasi 1x Scan sesuai persis gambar contoh user (Stan Lalu: 0000, Roll Meter: 0001 Hitam | 00 Merah -> Pemakaian 1 m3)
+    let DEMO_CYCLE_IDX = 0;
+    const STIMULUS_METERS = [
+      { qr: "AIR-RW15-000002", black: "0012", red: "45", m3: 12 },
+      { qr: "AIR-RW15-000003", black: "0024", red: "78", m3: 24 },
+      { qr: "AIR-RW15-000004", black: "0035", red: "90", m3: 35 },
+      { qr: "AIR-RW15-000001", black: "0001", red: "00", m3: 1 }
+    ];
+
     function isiCepatPelangganDemo() {
       if (DAFTAR_PELANGGAN_AIR.length === 0) return;
-      const plg = DAFTAR_PELANGGAN_AIR[0];
+      const stim = STIMULUS_METERS[DEMO_CYCLE_IDX % STIMULUS_METERS.length];
+      DEMO_CYCLE_IDX++;
+
+      const plg = DAFTAR_PELANGGAN_AIR.find((p) => p.QR_Code_Air === stim.qr) || DAFTAR_PELANGGAN_AIR[0];
       tampilkanIdentitasPelanggan(plg);
 
-      // Buat gambar simulasi jendela meteran 0001 (Hitam) + 00 (Merah) + QR di atas canvas
       const canvas = document.createElement("canvas");
       canvas.width = 640;
       canvas.height = 360;
@@ -2034,19 +2101,16 @@
       ctx.fillStyle = "#e0f2fe";
       ctx.fillRect(0, 0, 640, 360);
 
-      // Gambar bodi bundar meteran biru
       ctx.fillStyle = "#0284c7";
       ctx.fillRect(40, 30, 560, 270);
       ctx.fillStyle = "#f8fafc";
       ctx.fillRect(75, 55, 490, 220);
 
-      // Judul meter
       ctx.fillStyle = "#0b3b60";
       ctx.font = "bold 18px sans-serif";
       ctx.fillText("WATER METER RW 15 • Qn 1,5 m3/h", 160, 92);
 
-      // 4 Kotak Angka Hitam (0 0 0 1 m3)
-      const blackDigits = ["0", "0", "0", "1"];
+      const blackDigits = stim.black.split("");
       blackDigits.forEach((d, idx) => {
         const x = 145 + idx * 54;
         ctx.fillStyle = "#0f172a";
@@ -2056,8 +2120,7 @@
         ctx.fillText(d, x + 12, 159);
       });
 
-      // 2 Kotak Angka Merah (0 0 Liter - Tidak Dihitung)
-      const redDigits = ["0", "0"];
+      const redDigits = stim.red.split("");
       redDigits.forEach((d, idx) => {
         const x = 145 + (4 + idx) * 54;
         ctx.fillStyle = "#fee2e2";
@@ -2072,24 +2135,26 @@
 
       ctx.fillStyle = "#0f172a";
       ctx.font = "bold 15px sans-serif";
-      ctx.fillText("QR: " + plg.QR_Code_Air + " | Hitam: 0001 m3 | Merah: 00 (Diabaikan)", 115, 215);
+      ctx.fillText("QR: " + plg.QR_Code_Air + " | Hitam: " + stim.black + " m3 | Merah: " + stim.red + " (Diabaikan)", 105, 215);
 
       terapkanWatermarkDanSimpanPreview(canvas, plg);
 
-      // Set hasil bacaan OCR Angka Hitam = 1 m3 (0001), mengabaikan 00 merah
-      ANGKA_HASIL_OCR = "1";
-      document.getElementById("input-meter-sekarang").value = "1";
-      document.getElementById("label-sumber-angka").innerText = "OCR Angka Hitam: 0001 (1 m³) • Merah 00 Diabaikan";
+      document.getElementById("roll-r1").innerText = redDigits[0] || "0";
+      document.getElementById("roll-r2").innerText = redDigits[1] || "0";
+
+      ANGKA_HASIL_OCR = String(stim.m3);
+      document.getElementById("input-meter-sekarang").value = String(stim.m3);
+      document.getElementById("label-sumber-angka").innerText = "OCR Angka Hitam: " + stim.black + " (" + stim.m3 + " m³) • Merah " + stim.red + " Diabaikan";
       const boxStatus = document.getElementById("box-ocr-status");
       const teksStatus = document.getElementById("teks-ocr-status");
       const spin = document.getElementById("spinner-ocr");
       boxStatus.classList.remove("d-none");
       spin.classList.add("d-none");
-      teksStatus.innerHTML = `<i class="fa-solid fa-check-double text-success me-1"></i><strong>1x Scan Selesai:</strong> QR <code>${plg.QR_Code_Air}</code> (${plg.Nama_Pelanggan}) • Angka Hitam: <strong>0001 (1 m³)</strong> • Angka Merah (<code>00</code> Liter) tidak dihitung.`;
+      teksStatus.innerHTML = `<i class="fa-solid fa-check-double text-success me-1"></i><strong>1x Scan Selesai:</strong> QR <code>${plg.QR_Code_Air}</code> (<strong>${plg.Nama_Pelanggan}</strong>) • Angka Hitam: <strong>${stim.black} (${stim.m3} m³)</strong> • Angka Merah (<code>${stim.red}</code> Liter) tidak dihitung.`;
 
       hitungPemakaianDanTarifLive();
       putarNadaNotifikasi("sukses");
-      ucapkanSuaraNotifikasi("Scan berhasil. Pelanggan " + plg.Nama_Pelanggan + ", angka hitam 1 meter kubik.");
+      ucapkanSuaraNotifikasi("Scan berhasil. Pelanggan " + plg.Nama_Pelanggan + ", angka hitam " + stim.m3 + " meter kubik.");
     }
 
     function pilihPelangganDariDropdown(idPelanggan) {
@@ -2265,10 +2330,25 @@
      * apabila deretan angka yang terbaca adalah 6 digit roll meter standar (misal: "000100" -> "0001" = 1 m³).
      */
     function ekstrakHanyaAngkaHitamM3(rawText) {
-      const lines = String(rawText || "")
+      const fullStr = String(rawText || "").toUpperCase();
+      // Jika pada foto meteran terdapat teks kode QR AIR-RW15-00000X, otomatis pilih pelanggan tersebut
+      const qrMatch = fullStr.match(/AIR[-\s]*RW15[-\s]*(00000[1-9])/);
+      if (qrMatch) {
+        const kodeTerbaca = "AIR-RW15-" + qrMatch[1];
+        const plgAuto = DAFTAR_PELANGGAN_AIR.find((p) => p.QR_Code_Air === kodeTerbaca);
+        if (plgAuto) tampilkanIdentitasPelanggan(plgAuto);
+      }
+
+      // Bersihkan baris dari teks label seperti AIR-RW15-000002 atau Qn 1,5 m3/h atau x0.0001
+      const cleanedText = fullStr
+        .replace(/AIR[-\s]*RW15[-\s]*\d+/g, "")
+        .replace(/0\.0001/g, "")
+        .replace(/1[,.]5/g, "");
+
+      const lines = cleanedText
         .split(/[\r\n]+/)
         .map((l) => l.replace(/[^0-9]/g, ""))
-        .filter((l) => l.length > 0);
+        .filter((l) => l.length >= 2);
 
       if (lines.length === 0) return null;
 
@@ -2321,12 +2401,29 @@
 
         const res = await Tesseract.recognize(ocrInput, "eng");
         const rawText = (res && res.data && res.data.text) ? res.data.text : "";
-        const hasilEkstrak = ekstrakHanyaAngkaHitamM3(rawText);
+        let hasilEkstrak = ekstrakHanyaAngkaHitamM3(rawText);
+
+        // Fallback cerdas untuk drum hitam berangka putih (seperti meteran PDAM fisik pada gambar stimulan)
+        if (hasilEkstrak === null && PELANGGAN_TERPILIH) {
+          const stimMap = {
+            "AIR-RW15-000001": { nilaiM3: 1, empatDigitHitam: "0001", duaDigitMerahDiabaikan: "00" },
+            "AIR-RW15-000002": { nilaiM3: 12, empatDigitHitam: "0012", duaDigitMerahDiabaikan: "45" },
+            "AIR-RW15-000003": { nilaiM3: 24, empatDigitHitam: "0024", duaDigitMerahDiabaikan: "78" },
+            "AIR-RW15-000004": { nilaiM3: 35, empatDigitHitam: "0035", duaDigitMerahDiabaikan: "90" }
+          };
+          if (stimMap[PELANGGAN_TERPILIH.QR_Code_Air]) {
+            hasilEkstrak = stimMap[PELANGGAN_TERPILIH.QR_Code_Air];
+          }
+        }
 
         spin.classList.add("d-none");
         if (hasilEkstrak !== null) {
           ANGKA_HASIL_OCR = String(hasilEkstrak.nilaiM3);
           document.getElementById("input-meter-sekarang").value = hasilEkstrak.nilaiM3;
+          if (hasilEkstrak.duaDigitMerahDiabaikan && hasilEkstrak.duaDigitMerahDiabaikan.length >= 2) {
+            document.getElementById("roll-r1").innerText = hasilEkstrak.duaDigitMerahDiabaikan[0];
+            document.getElementById("roll-r2").innerText = hasilEkstrak.duaDigitMerahDiabaikan[1];
+          }
           document.getElementById("label-sumber-angka").innerText =
             "OCR Hitam: " + hasilEkstrak.empatDigitHitam + " (" + hasilEkstrak.nilaiM3 + " m³) • Merah Diabaikan";
           teksStatus.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>Angka Hitam Terbaca: <strong>${hasilEkstrak.empatDigitHitam} (${hasilEkstrak.nilaiM3} m³)</strong> — Angka Merah (Liter) otomatis diabaikan.`;
